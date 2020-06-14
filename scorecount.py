@@ -864,5 +864,6 @@ for ns in nationScores:
     else:
         print("Still need to implement Nation" + ns)
 
+# Close the documents
 file.close()
 scoreFile.close()
