@@ -1,6 +1,6 @@
 #!/usr/bin/python3
 
-#Tasks
+# Tasks
 # * Add List of Scoring States
 # * Extract data from only Scoring States
 # * Add Logic to Determine if a State Scores
@@ -10,6 +10,7 @@
 
 import sys
 import datetime
+
 
 # Define Nation Table
 
@@ -752,10 +753,85 @@ nationTable = {
 
 }
 
+global stack
+stack = 0
+
+
+def pushStack():
+    global stack
+    stack = stack + 1
+
+
+def popStack():
+    global stack
+    if stack == 0:
+        return
+    else:
+        stack = stack - 1
 
 
 def removePrefix(s, prefix):
     return s[len(prefix):] if s.startswith(prefix) else s
+
+
+def relParser(dipBlock, playerNations):
+    relAtribs = []
+    firstAtrib = ""
+    secondAtrib = ""
+    thirdAtrib = ""
+    careAboutNation = False
+
+    firstAtrib = dipBlock[0]
+    firstAtrib = removePrefix(firstAtrib.strip(), "first=")
+    firstAtrib = firstAtrib.replace('"','')
+
+    if firstAtrib in playerNations:
+        careAboutNation = True
+        secondAtrib = dipBlock[1]
+        secondAtrib = removePrefix(secondAtrib.strip(), "second=")
+        secondAtrib = secondAtrib.replace('"','')
+
+        thirdAtrib = dipBlock[4]
+        thirdAtrib = removePrefix(thirdAtrib.strip(), "subject_type=")
+        thirdAtrib = thirdAtrib.replace('"','')
+
+        relAtribs.append(firstAtrib)
+        relAtribs.append(secondAtrib)
+        relAtribs.append(thirdAtrib)
+
+        return relAtribs
+
+    return relAtribs
+
+
+def diplomacyParser(file, playerNations):
+    # Get file iterator to diplomacy section
+
+    allAtribs = []
+    relAtribs = []
+
+    for line in file:
+        if "diplomacy=" in line:
+            pushStack()
+            break
+    while(stack > 0):
+        line = file.readline()
+        if "{" in line:
+            pushStack()
+            if "dependency=" in line:
+                dipBlock = []
+                while(stack > 1):
+                    line = file.readline()
+                    if "}" in line:
+                        popStack()
+                    else:
+                        dipBlock.append(line.rstrip())
+                relAtribs = relParser(dipBlock, playerNations)
+                if(len(relAtribs) > 2):
+                    allAtribs.append(relAtribs)
+        elif "}" in line:
+            popStack()
+    return allAtribs
 
 
 def dictValue(d, k):
@@ -764,6 +840,33 @@ def dictValue(d, k):
     else:
         return False
 
+def getOverlord(nation, diploReps):
+    nation = nation.replace('"','')
+    for rep in diploReps:
+        if nation == rep[1]:
+            return rep[0]
+    return nation
+
+
+def getRelation(nation, diploReps):
+    nation = nation.replace('"','')
+    for rep in diploReps:
+        if nation == rep[1]:
+            return rep[2]
+    return "none"
+
+def isSameCountry(nationList, diploReps):
+    uniqueNations = []
+    for nation in nationList:
+        overlord = getOverlord(nation, diploReps)
+        if overlord not in uniqueNations:
+            relation = getRelation(nation, diploReps)
+            if "tributary" not in relation:
+                uniqueNations.append(overlord)
+    if len(uniqueNations) == 1:
+        return True
+    else:
+        return False
 
 fileName = sys.argv[1]
 victoryCardList = sys.argv[2]
@@ -790,7 +893,15 @@ for line in file:
     if "map_area_data" in line:
         break
 
+# Generate Player Nation List
+pnFileName = sys.argv[3]
+playerNationFile = open(pnFileName)
+pNationList = []
+for line in playerNationFile:
+    pNationList.append(line.rstrip())
+
 # Unnecessary Bools
+
 endOfAreas = False
 endOfState = False
 endOfCountry = False
@@ -826,6 +937,14 @@ while(not endOfAreas):
             if dictValue(cardDict, vicCard):
                 cardDict[vicCard] = countryList
 
+
+# Strip Relationships
+
+file.seek(0)
+allDiplos = []
+
+allDiplos = diplomacyParser(file, pNationList)
+
 # Determine Scores
 
 nations = []
@@ -839,30 +958,40 @@ for k in cardDict:
 
 nationScores = {i: 0 for i in nations}
 
+
 for k in cardDict:
     scoringList = []
     scoringNation = ""
     score = 0
     if len(cardDict[k]) == 1:
         scoringList = cardDict[k]
-        scoringNation = scoringList[0]
-        scoringNation = scoringNation.strip('"')
+        scoringNation = getOverlord(scoringList[0],allDiplos)
         score = nationScores[scoringNation]
         score = score + 1
         nationScores[scoringNation] = score
+    elif len(cardDict[k]) > 1:
+        scoringList = cardDict[k]
+        if isSameCountry(scoringList, allDiplos):
+            scoringNation = getOverlord(scoringList[0], allDiplos)
+            score = nationScores[scoringNation]
+            score = score + 1
+            nationScores[scoringNation] = score
+
 
 
 scoreFile.write('Timestamp: {:%Y-%m-%d %H:%M:%S}'.format(datetime.datetime.now()))
 scoreFile.write(',\n')
 
-for ns in nationScores:
-    if dictValue(nationTable,ns):
-        scoreline = "Nation: " + nationTable[ns] + " - " + str(nationScores[ns])
-        scoreFile.write(nationTable[ns] + ',' + str(nationScores[ns]))
+for pN in pNationList:
+    if dictValue(nationScores, pN):
+        scoreline = "Nation: " + nationTable[pN] + " - " + str(nationScores[pN])
+        scoreFile.write(nationTable[pN] + ',' + str(nationScores[pN]))
         scoreFile.write('\n')
         print(scoreline)
     else:
-        print("Still need to implement Nation" + ns)
+        scoreline = "Nation: " + nationTable[pN] + " - 0"
+        scoreFile.write(scoreline)
+        print(scoreline)
 
 # Close the documents
 file.close()
