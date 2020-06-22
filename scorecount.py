@@ -773,6 +773,15 @@ def popStack():
 def removePrefix(s, prefix):
     return s[len(prefix):] if s.startswith(prefix) else s
 
+def getRelType(dipBlock):
+    relType = ""
+    for item in dipBlock:
+        if "subject_type=" in item:
+            relType = item
+            relType = removePrefix(relType.strip(), "subject_type=")
+            relType = relType.replace('"','')
+    return relType
+
 
 def relParser(dipBlock, playerNations):
     relAtribs = []
@@ -791,9 +800,7 @@ def relParser(dipBlock, playerNations):
         secondAtrib = removePrefix(secondAtrib.strip(), "second=")
         secondAtrib = secondAtrib.replace('"','')
 
-        thirdAtrib = dipBlock[4]
-        thirdAtrib = removePrefix(thirdAtrib.strip(), "subject_type=")
-        thirdAtrib = thirdAtrib.replace('"','')
+        thirdAtrib = getRelType(dipBlock)
 
         relAtribs.append(firstAtrib)
         relAtribs.append(secondAtrib)
@@ -811,7 +818,9 @@ def diplomacyParser(file, playerNations):
     relAtribs = []
 
     for line in file:
-        if "diplomacy=" in line:
+        if "trade_diplomacy=" in line:
+            continue
+        elif "diplomacy=" in line:
             pushStack()
             break
     while(stack > 0):
@@ -944,6 +953,8 @@ file.seek(0)
 allDiplos = []
 
 allDiplos = diplomacyParser(file, pNationList)
+
+
 
 # Determine Scores
 
