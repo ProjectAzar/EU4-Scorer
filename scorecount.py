@@ -903,11 +903,24 @@ for line in file:
         break
 
 # Generate Player Nation List
-pnFileName = sys.argv[3]
-playerNationFile = open(pnFileName)
+
 pNationList = []
-for line in playerNationFile:
-    pNationList.append(line.rstrip())
+file.seek(0)
+for line in file:
+    if "players_countries=" in line:
+        pushStack()
+        break
+
+while(stack > 0):
+    line = file.readline()
+    line = line.lstrip()
+    line = line.rstrip()
+    if "}" in line:
+        popStack()
+        continue
+    elif len(line) == 5:
+        pNationList.append(line.replace('"', ''))
+
 
 # Unnecessary Bools
 
@@ -916,7 +929,7 @@ endOfState = False
 endOfCountry = False
 
 # Strip Country per Area from Save
-
+file.seek(0)
 while(not endOfAreas):
     line = file.readline()
     if "total_military_power" in line:
@@ -945,7 +958,6 @@ while(not endOfAreas):
                         continue
             if dictValue(cardDict, vicCard):
                 cardDict[vicCard] = countryList
-
 
 # Strip Relationships
 
