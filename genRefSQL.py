@@ -42,13 +42,33 @@ def getProvIDList(line):
         provIDList = line.split(' ')
     return provIDList
 
-# Helper for Tag Parser
+# Helpers for Tag Parser
 def getTag(line):
     tag = ""
     tagList = line.split(':')
     tag = tagList[0]
     tag = tag.strip()
     return tag
+
+
+def getTagNC(line):
+    tag = ""
+    tagList = line.split('=')
+    tag = tagList[0]
+    tag = tag.strip()
+    return tag
+
+
+def getNameNC(line):
+    name = ""
+    nameList = line.split('=')
+    name = nameList[1]
+    name = name.replace('"', '')
+    nameList = name.split('/')
+    name = nameList[1]
+    nameList = name.split('.')
+    name = nameList[0]
+    return name
 
 #################################
 # Helper Functions for Writer
@@ -75,7 +95,10 @@ localAreaNamesName = "D:\SteamLibrary\steamapps\common\Europa Universalis IV\loc
 localEmperorAreaName = "D:\SteamLibrary\steamapps\common\Europa Universalis IV\localisation\\emperor_map_l_english.yml"
 localProvincesName = "D:\SteamLibrary\steamapps\common\Europa Universalis IV\localisation\prov_names_l_english.yml"
 localProvID2Area = "D:\SteamLibrary\steamapps\common\Europa Universalis IV\map\\area.txt"
+
+# !!!!!!!!!!!!!!! Rewrite Parser With Country Tags File !!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 localNationTags = "D:\SteamLibrary\steamapps\common\Europa Universalis IV\localisation\countries_l_english.yml"
+rawNationTags = "D:\\SteamLibrary\\steamapps\\common\\Europa Universalis IV\\common\\country_tags\\00_countries.txt"
 
 # Open the reference files
 if os.path.exists(localAreaNamesName):
@@ -105,7 +128,13 @@ else:
 if os.path.exists(localNationTags):
     nationTagsFile = open(localNationTags, 'r', encoding="utf8")
 else:
-    print("No nation tags")
+    print("No local nation tags")
+    exit(2)
+
+if os.path.exists(rawNationTags):
+    rawTagsFile = open(rawNationTags, 'r', encoding="utf8")
+else:
+    print("No raw nation tags")
     exit(2)
 
 # Create dicts to store data from reference files. This data will later be used to add to/update
@@ -211,6 +240,18 @@ for line in emperorNamesFile:
         tag = getTag(line)
         nationName = getName(line)
         nationTags[tag] = nationName
+
+for line in rawTagsFile:
+    tag = ""
+    nationName = ""
+    patTag = re.search("^[A-Z][A-Z][A-Z]", line)
+    if patTag:
+        tag = getTagNC(line)
+        nationName = getNameNC(line)
+        if tag not in nationTags.keys():
+            nationTags[tag] = nationName
+
+
 
 #############
 # Build provID2Area dict

@@ -110,7 +110,7 @@ def updateControllerList(owner, nationSubjects, controllerList):
 #############################
 # File Management
 #############################
-saveFileName = "C:\\Users\proje\\Documents\Paradox Interactive\Europa Universalis IV\save games\mp_Savoy1508_01_13.eu4"
+saveFileName = "C:/Users/proje/Documents/Paradox Interactive/Europa Universalis IV/save games/mp_Sardinia-Piedmont1571_06_13.eu4"
 victoryCardsName = "victory_cards.txt"
 
 if os.path.exists(saveFileName):
@@ -280,6 +280,8 @@ for area in areasAndProvinces:
         owners.append(owner)
     areaOwners[area] = owners
 
+
+
 for area in areaOwners:
     ownersList = areaOwners[area]
     controllerList = []
@@ -333,6 +335,7 @@ cursor.execute("CREATE TABLE IF NOT EXISTS scored_areas(areaName TEXT PRIMARY KE
 #############
 # Output Player Info and Scores to player_scores table
 #############
+
 for player in playerNations:
     playerName = player
     playerTag = playerNations[player]

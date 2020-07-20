@@ -10,7 +10,7 @@ cursor = connection.cursor()
 #################################
 # Output Player Scores
 #################################
-cursor.execute("SELECT * FROM player_scores")
+cursor.execute("SELECT * FROM player_scores ORDER BY score DESC")
 playerScores = cursor.fetchall()
 
 print("Score Update: ")
@@ -34,7 +34,7 @@ scoredAreas = cursor.fetchall()
 print("\n")
 print("Scored Areas:")
 
-t = PrettyTable(['State Name', 'Player'])
+t = PrettyTable(['Player', 'State Name'])
 for area in scoredAreas:
     areaName = area[0]
     stateName = area[1]
