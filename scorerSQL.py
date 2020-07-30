@@ -110,7 +110,7 @@ def updateControllerList(owner, nationSubjects, controllerList):
 #############################
 # File Management
 #############################
-saveFileName = "C:/Users/proje/Documents/Paradox Interactive/Europa Universalis IV/save games/mp_Sardinia-Piedmont1571_06_13.eu4"
+saveFileName = "C:/Users/proje/Documents/Paradox Interactive/Europa Universalis IV/save games/mp_Sardinia-Piedmont1597_02_09.eu4"
 victoryCardsName = "victory_cards.txt"
 
 if os.path.exists(saveFileName):
@@ -168,7 +168,7 @@ while stack > 0:
     if "}" in line:
         stack = stack - 1
     patProvID = re.search("^-[0-9]+={$", line)
-    patOwner = re.search("owner=\"[A-Z]{3}\"$", line)
+    patOwner = re.search("owner=\"[A-Z]{1}[A-Z0-9]{2}\"$", line)
     if stack == 2:
         if patProvID:
             id = getProvID(line)
@@ -281,7 +281,6 @@ for area in areasAndProvinces:
     areaOwners[area] = owners
 
 
-
 for area in areaOwners:
     ownersList = areaOwners[area]
     controllerList = []
@@ -331,6 +330,10 @@ cursor.execute("CREATE TABLE IF NOT EXISTS player_scores(playerName TEXT PRIMARY
 cursor.execute("DROP TABLE IF EXISTS scored_areas;")
 cursor.execute("CREATE TABLE IF NOT EXISTS scored_areas(areaName TEXT PRIMARY KEY, stateName TEXT, controllerTag TEXT, playerName TEXT);")
 
+cursor.execute("DROP TABLE IF EXISTS provice_owners;")
+cursor.execute("CREATE TABLE IF NOT EXISTS province_owners(provID TEXT PRIMARY KEY, provOwner);")
+
+
 
 #############
 # Output Player Info and Scores to player_scores table
@@ -359,6 +362,15 @@ for player in playerNations:
             stateName = formatTuple(stateName[0])
             cursor.execute("INSERT OR REPLACE INTO scored_areas(areaName, stateName, controllerTag, playerName) VALUES (?,?,?,?)",
                           (area, stateName, playerTag, playerName))
+
+###########
+# Prov ID
+###########
+
+for id in provinceOwner:
+    owner = provinceOwner[id]
+    cursor.execute("INSERT OR REPLACE INTO province_owners(provID, provOwner) VALUES (?,?)",
+                   (id, owner))
 
 #############################
 # Cleanup
