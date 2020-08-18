@@ -85,7 +85,7 @@ def formatTuple(t):
 
 
 def getOverlord(nation, nationSubjects):
-    returnNation = ""
+    returnNation = nation
     for tag in nationSubjects:
         if nation in nationSubjects[tag]:
             returnNation = tag
