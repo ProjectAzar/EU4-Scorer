@@ -1,6 +1,7 @@
 import os
 import re
 import sqlite3
+import sys
 
 #############################
 # Helper Functions
@@ -110,7 +111,7 @@ def updateControllerList(owner, nationSubjects, controllerList):
 #############################
 # File Management
 #############################
-saveFileName = "C:/Users/proje/Documents/Paradox Interactive/Europa Universalis IV/save games/mp_Sardinia-Piedmont1597_02_09.eu4"
+saveFileName = sys.argv[1]
 victoryCardsName = "victory_cards.txt"
 
 if os.path.exists(saveFileName):
@@ -333,6 +334,9 @@ cursor.execute("CREATE TABLE IF NOT EXISTS scored_areas(areaName TEXT PRIMARY KE
 cursor.execute("DROP TABLE IF EXISTS provice_owners;")
 cursor.execute("CREATE TABLE IF NOT EXISTS province_owners(provID TEXT PRIMARY KEY, provOwner);")
 
+# Setup Subject Nation Table.
+cursor.execute("DROP TABLE IF EXISTS subject_nations;")
+cursor.execute("CREATE TABLE IF NOT EXISTS subject_nations(subject TEXT PRIMARY KEY, overlord TEXT);")
 
 
 #############
@@ -361,7 +365,7 @@ for player in playerNations:
             stateName = cursor.fetchall()
             stateName = formatTuple(stateName[0])
             cursor.execute("INSERT OR REPLACE INTO scored_areas(areaName, stateName, controllerTag, playerName) VALUES (?,?,?,?)",
-                          (area, stateName, playerTag, playerName))
+                           (area, stateName, playerTag, playerName))
 
 ###########
 # Prov ID
@@ -371,6 +375,15 @@ for id in provinceOwner:
     owner = provinceOwner[id]
     cursor.execute("INSERT OR REPLACE INTO province_owners(provID, provOwner) VALUES (?,?)",
                    (id, owner))
+
+#############
+# Subject Nations
+#############
+print('nationSubjects: ', nationSubjects)
+for overlord in nationSubjects:
+    for subject in nationSubjects[overlord]:
+        cursor.execute("INSERT OR REPLACE INTO subject_nations(subject, overlord) VALUES (?,?)",
+         (subject, overlord))
 
 #############################
 # Cleanup
