@@ -85,12 +85,13 @@ def formatTuple(t):
 
 
 def getOverlord(nation, nationSubjects):
+    returnNation = ""
     for tag in nationSubjects:
-        if nation == tag:
-            return nation
-        elif nation in nationSubjects[tag]:
-            return tag
-    return nation
+        if nation in nationSubjects[tag]:
+            returnNation = tag
+        elif tag == nation:
+            returnNation = nation
+    return returnNation
 
 
 def updateControllerList(owner, nationSubjects, controllerList):
@@ -279,6 +280,7 @@ for area in areasAndProvinces:
     for province in provinceList:
         owner = provinceOwner[province]
         owners.append(owner)
+    # print("area, owners: ", area, owners)
     areaOwners[area] = owners
 
 
@@ -379,7 +381,6 @@ for id in provinceOwner:
 #############
 # Subject Nations
 #############
-print('nationSubjects: ', nationSubjects)
 for overlord in nationSubjects:
     for subject in nationSubjects[overlord]:
         cursor.execute("INSERT OR REPLACE INTO subject_nations(subject, overlord) VALUES (?,?)",
