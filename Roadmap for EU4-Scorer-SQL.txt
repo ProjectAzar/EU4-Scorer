@@ -1,0 +1,46 @@
+EU4 Scorer V2
+* Primary Features to Implement
+	- Write Reference Table Generator
+	- Read from Reference Tables 
+	- Create Scoring Table from Game State Document 
+	- Process SQL queries based on scoring table 
+* Reference Table Generator 
+	# Province Table 
+		- Read from localization of area names to get map between code name and readable name 
+			+ D:\SteamLibrary\steamapps\common\Europa Universalis IV\localisation\areas_regions_l_english.yml
+		- Read from province localization to get province ID and province readable name 
+			+ D:\SteamLibrary\steamapps\common\Europa Universalis IV\localisation\prov_names_l_english.yml
+			+ Will need to strip characters from province ID string
+		- Read from area to get province IDs associated with each code area name 
+			+ D:\SteamLibrary\steamapps\common\Europa Universalis IV\map\area.txt
+			+ Watch out for inconsistent formating in this document 
+		- Fields:
+			+ <key>provinceID/text
+			+ provinceName/text
+			+ mapArea/text
+			+ state/text
+			+ victoryCard/bool
+	# Nations Table 
+		- Read country tags and country readable names and add to sepereate table 
+			+ D:\SteamLibrary\steamapps\common\Europa Universalis IV\common\country_tags\00_countries
+			+ Careful of inconsistent formatting 
+			+ Will need to strip text from country names 
+		- Fields:
+			+ <key>countryTag/text
+			+ countryName/text 
+	# Victory Cards 
+		- Reads in list of victory cards 
+		- Sets bool in reference table to identify each victory card 
+* Scorer
+	# Players Table 
+		- Fields:
+			+ <key>playerName/text
+			+ countryName/text
+			+ countryTag/text
+			+ vassalNames/text
+			+ vassalTags/text
+	# Scoring Table 
+		- Fields:
+			+ <key>playerName/text
+			+ scoredCards/text
+			+ score/int
