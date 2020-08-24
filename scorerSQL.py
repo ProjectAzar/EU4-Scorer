@@ -102,7 +102,7 @@ def main(argv):
     if os.path.exists(victoryCardsName):
         victoryCardsFile = open(victoryCardsName, 'r', encoding="utf8")
     else:
-        print("Failed to open victory cards.")
+        print("Failed to find victory card file.")
         sys.exit()
 
     #############################
@@ -250,8 +250,6 @@ def main(argv):
         for province in provinceList:
             owner = provinceOwner[province]
             owners.append(owner)
-        if area == "oregon_area":
-            print("area, owners: ", area, owners)
         areaOwners[area] = owners
 
 
